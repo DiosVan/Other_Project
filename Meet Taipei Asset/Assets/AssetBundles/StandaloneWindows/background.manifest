@@ -1,0 +1,23 @@
+ManifestFileVersion: 0
+CRC: 2307491309
+Hashes:
+  AssetFileHash:
+    serializedVersion: 2
+    Hash: 1cc1cc8d536bf6ace3c4ab75736c36cd
+  TypeTreeHash:
+    serializedVersion: 2
+    Hash: 36c33a819640bead83b84b1645a12e6d
+HashAppended: 0
+ClassTypes:
+- Class: 28
+  Script: {instanceID: 0}
+- Class: 213
+  Script: {instanceID: 0}
+Assets:
+- Assets/Resource/Background/bg_morning_rainy.jpg
+- Assets/Resource/Background/bg_night_sunny.jpg
+- Assets/Resource/Background/bg_morning_sunny.jpg
+- Assets/Resource/Background/bg_night_rainy.jpg
+- Assets/Resource/Background/bg_morning_cloudy.jpg
+- Assets/Resource/Background/bg_night_cloudy.jpg
+Dependencies: []
