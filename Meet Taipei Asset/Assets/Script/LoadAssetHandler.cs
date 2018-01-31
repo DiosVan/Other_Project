@@ -38,10 +38,15 @@ public class LoadAssetHandler : MonoBehaviour
 		while (!Caching.ready)
 			yield return null;
 
+#if UNITY_ANDROID
+		string basePath = string.Format("file://{0}/AssetBundles/Android/", Application.dataPath);
+		string mainbundleName = "Android";
+#else
 		string basePath = string.Format("file://{0}/AssetBundles/StandaloneWindows/", Application.dataPath);
+		string mainbundleName = "StandaloneWindows";
+#endif
 
-		string bundleName = "StandaloneWindows";
-		string url = basePath + bundleName;
+		string url = basePath + mainbundleName;
 		string manifestURL = url + ".manifest";
 		//
 		url += ((url.Contains("?")) ? "&" : "?") + "t=" + DateTime.Now.ToString("yyyyMMddHHmmss");
@@ -56,13 +61,40 @@ public class LoadAssetHandler : MonoBehaviour
 		if (string.IsNullOrEmpty(wwwManifest.error))
 		{
 			// 
-			string[] lines = wwwManifest.downloadHandler.text.Split(new string[] { "CRC: " }, StringSplitOptions.None);
-			latestCRC = uint.Parse(lines[1].Split(new string[] { "\n" }, StringSplitOptions.None)[0]);
+			//string[] lines = wwwManifest.downloadHandler.text.Split(new string[] { "CRC: " }, StringSplitOptions.None);
+			//latestCRC = uint.Parse(lines[1].Split(new string[] { "\n" }, StringSplitOptions.None)[0]);
+			string[] lines = wwwManifest.downloadHandler.text.Split(new string[] { "\n" }, StringSplitOptions.None);
+
+			List<string> assetList = new List<string>();
+			foreach (var s in lines)
+			{
+				if (s.Contains("CRC: "))
+				{
+					int startCatchIndex = s.IndexOf("CRC: ") + 5;
+					latestCRC = uint.Parse(s.Substring(startCatchIndex, s.Length - startCatchIndex));
+				}
+
+				if (s.Contains("Name: "))
+				{
+					int startCatchIndex = s.LastIndexOf("Name: ") + 6;
+					string asName = s.Substring(startCatchIndex, s.Length - startCatchIndex);
+
+					if (!assetList.Contains(asName))
+						assetList.Add(asName);
+				}
+			}
+
+			//用latestCRC有沒有更新來判定要不要下載(待...
+			if (true)
+			{
+
+			}
+
+			foreach (var ab in assetList)
+				Debug.Log("ab:" + ab);
 		}
 		else
-			Debug.Log(bundleName + ".manifest has not found.");
-
-		Debug.Log("latestCRC :" + latestCRC);
+			Debug.Log(mainbundleName + ".manifest has not found.");
 	}
 
 	private IEnumerator LoadAs()

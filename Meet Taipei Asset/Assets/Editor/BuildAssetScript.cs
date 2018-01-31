@@ -14,22 +14,22 @@ public class BuildAssetScript : MonoBehaviour
 		LZ4
 	}
 
-	[MenuItem("Custom Editor/Build AssetBundles Uncompress")]
-	static void PackWindowAsset()
-	{
-		ExecCreateAssetBundles(CompressionType.Uncompress);
-	}
-
-	[MenuItem("Custom Editor/Build AssetBundles LZMA")]
+	[MenuItem("Custom Editor/Build AssetBundles Default(LZMA)", false, 0)]
 	static void PackAndroidAsset()
 	{
 		ExecCreateAssetBundles(CompressionType.LZMA);
 	}
 
-	[MenuItem("Custom Editor/Build AssetBundles LZ4")]
+	[MenuItem("Custom Editor/Build AssetBundles LZ4", false, 1)]
 	static void PackIosAsset()
 	{
 		ExecCreateAssetBundles(CompressionType.LZ4);
+	}
+
+	[MenuItem("Custom Editor/Build AssetBundles Uncompress", false, 2)]
+	static void PackWindowAsset()
+	{
+		ExecCreateAssetBundles(CompressionType.Uncompress);
 	}
 
 	static void ExecCreateAssetBundles(CompressionType compressionType)
@@ -37,13 +37,13 @@ public class BuildAssetScript : MonoBehaviour
 		BuildAssetBundleOptions buildOptions = BuildAssetBundleOptions.None;
 		switch (compressionType)
 		{
-			case CompressionType.Uncompress:
-				buildOptions = BuildAssetBundleOptions.UncompressedAssetBundle;
-				break;
 			case CompressionType.LZMA:
 				break;
 			case CompressionType.LZ4:
 				buildOptions = BuildAssetBundleOptions.ChunkBasedCompression;
+				break;
+			case CompressionType.Uncompress:
+				buildOptions = BuildAssetBundleOptions.UncompressedAssetBundle;
 				break;
 		}
 
@@ -73,7 +73,6 @@ public class BuildAssetScript : MonoBehaviour
 
 			//
 			if (!(obj is GameObject) && !(obj is Texture2D) && !(obj is Material)) continue;
-
 		}
 
 		BuildPipeline.BuildAssetBundles(folderPath, buildOptions, mTargetPlatform);
