@@ -85,16 +85,66 @@ public class LoadAssetHandler : MonoBehaviour
 			}
 
 			//用latestCRC有沒有更新來判定要不要下載(待...
-			if (true)
-			{
+			if (assetList.Count > 0)
+				/*StartCoroutine(LoadAs());*/StartCoroutine(TestLoad(assetList));
 
-			}
-
-			foreach (var ab in assetList)
-				Debug.Log("ab:" + ab);
+			//foreach (var ab in assetList)
+			//	Debug.Log("ab:" + ab);
 		}
 		else
 			Debug.Log(mainbundleName + ".manifest has not found.");
+	}
+
+	AssetLoader asb;
+	private IEnumerator TestLoad(List<string> assetList)
+	{
+		//for (int i = 0; i < assetList.Count; i++)
+		{
+			
+			string basePath = string.Format("file://{0}/AssetBundles/StandaloneWindows/", Application.dataPath);
+			string url = basePath + assetList[0];
+			string urlPath = "https://www.dropbox.com/s/14t9wbb6u67n4dw/background?dl=1";
+			Debug.Log(url);
+
+			//var w = UnityWebRequest.GetAssetBundle(urlPath);
+			//var mRequestOperation = w.Send();
+
+			////IsDone = mRequestOperation.isDone;
+
+			//while (!mRequestOperation.isDone)
+			//{
+			//	yield return null;
+			//	Debug.Log("---- :" + mRequestOperation.progress);
+			//}
+
+			UnityWebRequest w = UnityWebRequest.Get(urlPath);
+			asb = new AssetLoader();
+			StartCoroutine(asb.DownloadStart(w, FF));
+			//yield return null;
+			//while (!asb.MoveNext())
+			//	yield return null;
+
+			//yield return asb;
+			while (!asb.IsDone)
+			{
+				Debug.Log(string.Format("[{0}]_{1}%", assetList[0], asb.Progress));
+				yield return null;
+			}
+
+			//Debug.Log(string.Format("[{0}]{1}_finish", assetList[i], asb.Content));
+			Debug.Log("---------------- " );
+			
+
+			
+		}
+
+		foreach (KeyValuePair<string, AssetBundle> kv in mBundleDict)
+			Debug.Log(kv.Key + "/" + kv.Value);
+	}
+
+	private void FF(object www)
+	{
+		DownloadHandlerAssetBundle.GetContent(asb.mWWW);
 	}
 
 	private IEnumerator LoadAs()

@@ -2,36 +2,64 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Networking;
 
-public class AssetLoader : ILoader
+public class AssetLoader : ILoader, IEnumerator
 {
-	string IProgress.TargetName { get; }
+	#region progress
+	public string TargetName { get; set; }
+	public float Progress { get { return mRequestOperation.progress; } }
+	public bool IsFailed { get { return (null != mWebRequest) ? mWebRequest.isError : false; } }
+	public bool IsDone { get { return mRequestOperation.isDone; } }
+	#endregion
 
-	bool IProgress.IsFailed { get; }
+	#region ILoader
+	void ILoader.DownloadFinish() { }
+	#endregion
 
-	bool IProgress.IsDone { get; }
+	#region IDisposable
+	void IDisposable.Dispose() { }
+	#endregion
 
-	float IProgress.Progress { get; }
+	#region IEnumerator
+	public object Current { get; set; }
 
-	object IEnumerator.Current { get; }
-
-	void IDisposable.Dispose()
+	public bool MoveNext()
 	{
-		throw new NotImplementedException();
+		return IsDone;
 	}
 
-	void ILoader.DownloadFinish()
+	public void Reset() { }
+	#endregion
+
+	private AssetBundle mContent = null;
+	public UnityWebRequest mWWW
 	{
-		throw new NotImplementedException();
+		get { return mWebRequest; }
 	}
 
-	bool IEnumerator.MoveNext()
-	{
-		throw new NotImplementedException();
-	}
+	public UnityWebRequest mWebRequest = null;
+	AsyncOperation mRequestOperation = null;
+	//public AssetLoader(/*UnityWebRequest w*/)
+	//{
+	//	//mWebRequest = w;
+	//}
 
-	void IEnumerator.Reset()
+	public IEnumerator DownloadStart(UnityWebRequest w,Action<object> OnFinish)
 	{
-		throw new NotImplementedException();
+		string urlPath = "https://www.dropbox.com/s/14t9wbb6u67n4dw/background?dl=1";
+		mWebRequest = UnityWebRequest.Get(urlPath);
+		//var vv = w;
+		mRequestOperation = mWebRequest.Send();
+
+		//IsDone = mRequestOperation.isDone;
+
+		while (!mRequestOperation.isDone)
+		{
+			yield return null;
+			Debug.Log("---- :" + mRequestOperation.progress);
+		}
+
+		OnFinish(mWebRequest);
 	}
 }
