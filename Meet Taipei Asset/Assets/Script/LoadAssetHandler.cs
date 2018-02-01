@@ -117,22 +117,23 @@ public class LoadAssetHandler : MonoBehaviour
 			//	Debug.Log("---- :" + mRequestOperation.progress);
 			//}
 
-			UnityWebRequest w = UnityWebRequest.Get(urlPath);
-			asb = new AssetLoader();
-			StartCoroutine(asb.DownloadStart(w, FF));
+			var w = UnityWebRequest.GetAssetBundle(urlPath);
+			asb = new AssetLoader(w);
+			//var ssss = asb.mWWW.Send();
+			//StartCoroutine(asb.DownloadStart(w, FF));
 			//yield return null;
 			//while (!asb.MoveNext())
 			//	yield return null;
 
 			//yield return asb;
-			while (!asb.IsDone)
+			while (!asb.MoveNext())
 			{
 				Debug.Log(string.Format("[{0}]_{1}%", assetList[0], asb.Progress));
 				yield return null;
 			}
-
+			var assetBundle = DownloadHandlerAssetBundle.GetContent(asb.mWWW);
 			//Debug.Log(string.Format("[{0}]{1}_finish", assetList[i], asb.Content));
-			Debug.Log("---------------- " );
+			Debug.Log("---------------- "+ assetBundle);
 			
 
 			
@@ -144,7 +145,8 @@ public class LoadAssetHandler : MonoBehaviour
 
 	private void FF(object www)
 	{
-		DownloadHandlerAssetBundle.GetContent(asb.mWWW);
+		UnityWebRequest ee = (UnityWebRequest)www;
+		DownloadHandlerAssetBundle.GetContent(ee);
 	}
 
 	private IEnumerator LoadAs()

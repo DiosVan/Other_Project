@@ -40,10 +40,11 @@ public class AssetLoader : ILoader, IEnumerator
 
 	public UnityWebRequest mWebRequest = null;
 	AsyncOperation mRequestOperation = null;
-	//public AssetLoader(/*UnityWebRequest w*/)
-	//{
-	//	//mWebRequest = w;
-	//}
+	public AssetLoader(UnityWebRequest w)
+	{
+		mWebRequest = w;
+		mRequestOperation=mWebRequest.Send();
+	}
 
 	public IEnumerator DownloadStart(UnityWebRequest w,Action<object> OnFinish)
 	{
