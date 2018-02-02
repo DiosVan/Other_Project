@@ -1,0 +1,21 @@
+ManifestFileVersion: 0
+CRC: 1824099952
+Hashes:
+  AssetFileHash:
+    serializedVersion: 2
+    Hash: f84729caa00bb1b669f12590189c882e
+  TypeTreeHash:
+    serializedVersion: 2
+    Hash: 36c33a819640bead83b84b1645a12e6d
+HashAppended: 0
+ClassTypes:
+- Class: 28
+  Script: {instanceID: 0}
+- Class: 213
+  Script: {instanceID: 0}
+Assets:
+- Assets/Resource/TestAsset_1/icon_omegatanks_16x16.png
+- Assets/Resource/TestAsset_1/icon_omegatanks_32x32.png
+- Assets/Resource/TestAsset_1/icon_omegatanks_48x48.png
+- Assets/Resource/TestAsset_1/icon_omegatanks_64x64.png
+Dependencies: []

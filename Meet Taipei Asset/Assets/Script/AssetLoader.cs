@@ -14,7 +14,27 @@ public class AssetLoader : ILoader, IEnumerator
 	#endregion
 
 	#region ILoader
-	void ILoader.DownloadFinish() { }
+	public void StartDownload()
+	{
+		if (null != mWebRequest)
+		{
+			mRequestOperation = mWebRequest.Send();
+
+			while (!mRequestOperation.isDone)
+			{
+				if (null != OnDownloading)
+					OnDownloading(TargetName, mRequestOperation.progress * 100f);
+			}
+
+			DownloadFinish();
+		}
+	}
+
+	public void DownloadFinish()
+	{
+		if (null != OnDownloadComplete)
+			OnDownloadComplete();
+	}
 	#endregion
 
 	#region IDisposable
@@ -24,43 +44,39 @@ public class AssetLoader : ILoader, IEnumerator
 	#region IEnumerator
 	public object Current { get; set; }
 
-	public bool MoveNext()
-	{
-		return IsDone;
-	}
+	public bool MoveNext() { return IsDone; }
 
 	public void Reset() { }
 	#endregion
 
-	private AssetBundle mContent = null;
-	public UnityWebRequest mWWW
-	{
-		get { return mWebRequest; }
-	}
+	public event Action<string, float> OnDownloading;
+	public event Action OnDownloadComplete;
 
-	public UnityWebRequest mWebRequest = null;
+	UnityWebRequest mWebRequest = null;
 	AsyncOperation mRequestOperation = null;
-	public AssetLoader(UnityWebRequest w)
+
+	private static string BASE_URL = string.Format("file://{0}/AssetBundles/", Application.dataPath);
+
+	public AssetLoader(string target, UnityWebRequest w)
 	{
+#if UNITY_ANDROID
+#else
+		string url = string.Format("{0}/{1}/{2}", BASE_URL, "StandaloneWindows", target);
+		string mainfestURL = string.Format("{0}.manifest", url);
+#endif
+		TargetName = target;
+
 		mWebRequest = w;
-		mRequestOperation=mWebRequest.Send();
 	}
 
-	public IEnumerator DownloadStart(UnityWebRequest w,Action<object> OnFinish)
+	public AssetBundle GetContent()
 	{
-		string urlPath = "https://www.dropbox.com/s/14t9wbb6u67n4dw/background?dl=1";
-		mWebRequest = UnityWebRequest.Get(urlPath);
-		//var vv = w;
-		mRequestOperation = mWebRequest.Send();
-
-		//IsDone = mRequestOperation.isDone;
-
-		while (!mRequestOperation.isDone)
+		if (IsDone)
 		{
-			yield return null;
-			Debug.Log("---- :" + mRequestOperation.progress);
+			var assetBundle = DownloadHandlerAssetBundle.GetContent(mWebRequest);
+			return (AssetBundle)assetBundle;
 		}
-
-		OnFinish(mWebRequest);
+		else
+			return null;
 	}
 }

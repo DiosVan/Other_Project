@@ -13,38 +13,56 @@ public class LoadAssetHandler : MonoBehaviour
 
 	private Dictionary<string, AssetBundle> mBundleDict;
 
+	private ManifestManager mMainfestMgr;
+
 	public static void Initial()
 	{
 		if (null == Instance)
 		{
-			var go = new GameObject("AssetHandler", typeof(LoadAssetHandler));
+			var go = new GameObject("AssetHandler", typeof(LoadAssetHandler), typeof(ManifestManager));
 			DontDestroyOnLoad(go);
 			Instance = go.GetComponent<LoadAssetHandler>();
-
-			Instance.mBundleDict = new Dictionary<string, AssetBundle>();
 		}
 	}
 
-	public void DownloadAsset()
+	public void GetManifest()
 	{
 		if (null == Instance)
 			return;
 
-		StartCoroutine(LoadBundleList());
+		if (null == mMainfestMgr)
+		{
+			mMainfestMgr = new ManifestManager();
+			mMainfestMgr.OnManifestDone += StartDownloadAsset;
+		}
+
+		//
+		StartCoroutine(mMainfestMgr.LoadManifest());
 	}
 
+	public void StartDownloadAsset(Dictionary<string, uint> downDict)
+	{
+		if (null == mBundleDict)
+			mBundleDict = new Dictionary<string, AssetBundle>();
+		else
+			mBundleDict.Clear();
+
+		StartCoroutine(GetAssetBundles(downDict));
+	}
+
+#if false
 	private IEnumerator LoadBundleList()
 	{
 		while (!Caching.ready)
 			yield return null;
 
-#if UNITY_ANDROID
+//#if UNITY_ANDROID
 		string basePath = string.Format("file://{0}/AssetBundles/Android/", Application.dataPath);
 		string mainbundleName = "Android";
-#else
+//#else
 		string basePath = string.Format("file://{0}/AssetBundles/StandaloneWindows/", Application.dataPath);
 		string mainbundleName = "StandaloneWindows";
-#endif
+//#endif
 
 		string url = basePath + mainbundleName;
 		string manifestURL = url + ".manifest";
@@ -86,7 +104,10 @@ public class LoadAssetHandler : MonoBehaviour
 
 			//用latestCRC有沒有更新來判定要不要下載(待...
 			if (assetList.Count > 0)
-				/*StartCoroutine(LoadAs());*/StartCoroutine(TestLoad(assetList));
+			{
+				/*StartCoroutine(LoadAs());*/
+				StartCoroutine(TestLoad(assetList));
+			}
 
 			//foreach (var ab in assetList)
 			//	Debug.Log("ab:" + ab);
@@ -94,85 +115,60 @@ public class LoadAssetHandler : MonoBehaviour
 		else
 			Debug.Log(mainbundleName + ".manifest has not found.");
 	}
+#endif
 
-	AssetLoader asb;
-	private IEnumerator TestLoad(List<string> assetList)
+	private int loadCompleteNum = 0;
+
+	private IEnumerator GetAssetBundles(Dictionary<string, uint> downlist)
 	{
-		//for (int i = 0; i < assetList.Count; i++)
+		//
+		while (!Caching.ready)
+			yield return null;
+
+		loadCompleteNum = 0;
+
+		string platform = string.Empty;
+
+#if UNITY_ANDROID
+		string basePath = string.Format("file://{0}/AssetBundles/Android/", Application.dataPath);
+		string mainbundleName = "Android";
+#else
+		string basePath = string.Format("file://{0}/AssetBundles/", Application.dataPath);
+		platform = "StandaloneWindows";
+#endif
+
+		List<AssetLoader> loadQuene = new List<AssetLoader>();
+
+		foreach (KeyValuePair<string, uint> kv in downlist)
 		{
-			
-			string basePath = string.Format("file://{0}/AssetBundles/StandaloneWindows/", Application.dataPath);
-			string url = basePath + assetList[0];
-			string urlPath = "https://www.dropbox.com/s/14t9wbb6u67n4dw/background?dl=1";
-			Debug.Log(url);
+			string assetURL = string.Format("{0}/{1}/{2}", basePath, platform, kv.Key);
+			var w = UnityWebRequest.GetAssetBundle(assetURL, kv.Value);
+			AssetLoader asb = new AssetLoader(kv.Key, w);
+			asb.OnDownloading += DownloadingListener;
+			asb.OnDownloadComplete += DownloadCompleteListenr;
+			loadQuene.Add(asb);
 
-			//var w = UnityWebRequest.GetAssetBundle(urlPath);
-			//var mRequestOperation = w.Send();
-
-			////IsDone = mRequestOperation.isDone;
-
-			//while (!mRequestOperation.isDone)
-			//{
-			//	yield return null;
-			//	Debug.Log("---- :" + mRequestOperation.progress);
-			//}
-
-			var w = UnityWebRequest.GetAssetBundle(urlPath);
-			asb = new AssetLoader(w);
-			//var ssss = asb.mWWW.Send();
-			//StartCoroutine(asb.DownloadStart(w, FF));
-			//yield return null;
-			//while (!asb.MoveNext())
-			//	yield return null;
-
-			//yield return asb;
-			while (!asb.MoveNext())
-			{
-				Debug.Log(string.Format("[{0}]_{1}%", assetList[0], asb.Progress));
-				yield return null;
-			}
-			var assetBundle = DownloadHandlerAssetBundle.GetContent(asb.mWWW);
-			//Debug.Log(string.Format("[{0}]{1}_finish", assetList[i], asb.Content));
-			Debug.Log("---------------- "+ assetBundle);
-			
-
-			
+			asb.StartDownload();
 		}
+
+		while (loadCompleteNum < loadQuene.Count)
+			yield return null;
+
+		foreach (var asb in loadQuene)
+			mBundleDict[asb.TargetName] = asb.GetContent();
 
 		foreach (KeyValuePair<string, AssetBundle> kv in mBundleDict)
 			Debug.Log(kv.Key + "/" + kv.Value);
 	}
 
-	private void FF(object www)
+	private void DownloadingListener(string down, float progress)
 	{
-		UnityWebRequest ee = (UnityWebRequest)www;
-		DownloadHandlerAssetBundle.GetContent(ee);
+		Debug.Log(string.Format("[{0}]:{1}%", down, progress));
+		//
 	}
 
-	private IEnumerator LoadAs()
+	private void DownloadCompleteListenr()
 	{
-		string path = string.Format("file://{0}/AssetBundles/{1}", Application.dataPath, "background");
-		string urlPath = "https://www.dropbox.com/s/14t9wbb6u67n4dw/background?dl=1";
-
-		var request = UnityWebRequest.GetAssetBundle(urlPath);
-		
-		var requestHandler = request.Send();
-
-		while (!requestHandler.isDone)
-		{
-			yield return null;
-			Debug.Log(requestHandler.progress);
-			// TODO: Show progress bar, op.progress
-		}
-
-		var assetBundle = DownloadHandlerAssetBundle.GetContent(request);
-
-		//request.Dispose();
-		
-
-		string[] strr = assetBundle.GetAllAssetNames();
-
-		for (int i = 0; i < strr.Length; i++)
-			Debug.Log("??:" + strr[i]);
+		loadCompleteNum++;
 	}
 }
