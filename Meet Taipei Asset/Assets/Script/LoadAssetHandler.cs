@@ -11,7 +11,7 @@ public class LoadAssetHandler : MonoBehaviour
 
 	public static LoadAssetHandler Instance = null;
 
-	private Dictionary<string, AssetBundle> mBundleDict;
+	private Dictionary<string, AssetBundle> mBundleDict = new Dictionary<string, AssetBundle>();
 
 	private ManifestManager mMainfestMgr;
 
@@ -19,7 +19,7 @@ public class LoadAssetHandler : MonoBehaviour
 	{
 		if (null == Instance)
 		{
-			var go = new GameObject("AssetHandler", typeof(LoadAssetHandler), typeof(ManifestManager));
+			var go = new GameObject("AssetHandler", typeof(LoadAssetHandler));
 			DontDestroyOnLoad(go);
 			Instance = go.GetComponent<LoadAssetHandler>();
 		}
@@ -31,23 +31,16 @@ public class LoadAssetHandler : MonoBehaviour
 			return;
 
 		if (null == mMainfestMgr)
-		{
 			mMainfestMgr = new ManifestManager();
-			mMainfestMgr.OnManifestDone += StartDownloadAsset;
-		}
 
-		//
-		StartCoroutine(mMainfestMgr.LoadManifest());
+		StartCoroutine(StartDownload());
 	}
 
-	public void StartDownloadAsset(Dictionary<string, uint> downDict)
+	IEnumerator StartDownload()
 	{
-		if (null == mBundleDict)
-			mBundleDict = new Dictionary<string, AssetBundle>();
-		else
-			mBundleDict.Clear();
+		yield return StartCoroutine(mMainfestMgr.LoadManifest());
 
-		StartCoroutine(GetAssetBundles(downDict));
+		yield return StartCoroutine(GetAssetBundles(mMainfestMgr.MainfestDict));
 	}
 
 #if false
@@ -142,20 +135,19 @@ public class LoadAssetHandler : MonoBehaviour
 		foreach (KeyValuePair<string, uint> kv in downlist)
 		{
 			string assetURL = string.Format("{0}/{1}/{2}", basePath, platform, kv.Key);
-			var w = UnityWebRequest.GetAssetBundle(assetURL, kv.Value);
-			AssetLoader asb = new AssetLoader(kv.Key, w);
+			AssetLoader asb = new AssetLoader();
 			asb.OnDownloading += DownloadingListener;
-			asb.OnDownloadComplete += DownloadCompleteListenr;
-			loadQuene.Add(asb);
 
-			asb.StartDownload();
+			AssetRequest mmr = new AssetRequest();
+			mmr.LoadPath = assetURL;
+			mmr.LoadName = kv.Key.ToLower();
+			mmr.AssetCRC = kv.Value;
+
+			LoadAssetHandler.Instance.StartCoroutine(asb.DownloadProcess(mmr, () => { return DownloadCompleteListenr(mmr); }));
 		}
 
-		while (loadCompleteNum < loadQuene.Count)
+		while (loadCompleteNum < downlist.Count)
 			yield return null;
-
-		foreach (var asb in loadQuene)
-			mBundleDict[asb.TargetName] = asb.GetContent();
 
 		foreach (KeyValuePair<string, AssetBundle> kv in mBundleDict)
 			Debug.Log(kv.Key + "/" + kv.Value);
@@ -167,8 +159,19 @@ public class LoadAssetHandler : MonoBehaviour
 		//
 	}
 
-	private void DownloadCompleteListenr()
+	private AssetRequest DownloadCompleteListenr(AssetRequest req)
 	{
 		loadCompleteNum++;
+
+		var assetBundle = DownloadHandlerAssetBundle.GetContent(req.LoadRequest);
+
+		mBundleDict[req.LoadName] = assetBundle;
+
+		return req;
 	}
+}
+
+public class AssetRequest : WebRequestBase
+{
+	public uint AssetCRC;
 }

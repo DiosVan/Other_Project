@@ -1,9 +1,8 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using System;
+using System.Collections;
 
-public interface ILoader : IProgress
+public interface ILoader<T> : IProgress
 {
-	void StartDownload();
+	IEnumerator DownloadProcess(T loadRequest, Func<T> callBack);
 	void DownloadFinish();
 }

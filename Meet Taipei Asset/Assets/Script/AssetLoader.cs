@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Networking;
 
-public class AssetLoader : ILoader, IEnumerator
+public class AssetLoader : ILoader<AssetRequest>
 {
 	#region progress
 	public string TargetName { get; set; }
@@ -57,18 +57,6 @@ public class AssetLoader : ILoader, IEnumerator
 
 	private static string BASE_URL = string.Format("file://{0}/AssetBundles/", Application.dataPath);
 
-	public AssetLoader(string target, UnityWebRequest w)
-	{
-#if UNITY_ANDROID
-#else
-		string url = string.Format("{0}/{1}/{2}", BASE_URL, "StandaloneWindows", target);
-		string mainfestURL = string.Format("{0}.manifest", url);
-#endif
-		TargetName = target;
-
-		mWebRequest = w;
-	}
-
 	public AssetBundle GetContent()
 	{
 		if (IsDone)
@@ -78,5 +66,24 @@ public class AssetLoader : ILoader, IEnumerator
 		}
 		else
 			return null;
+	}
+
+	public IEnumerator DownloadProcess(AssetRequest loadRequest, Func<AssetRequest> callBack)
+	{
+		TargetName = loadRequest.LoadName;
+
+		UnityWebRequest wwwAssetRequest = UnityWebRequest.GetAssetBundle(loadRequest.LoadPath, loadRequest.AssetCRC);
+		loadRequest.LoadRequest = wwwAssetRequest;
+		AsyncOperation wwwOperation = loadRequest.LoadRequest.Send();
+
+		while (!wwwOperation.isDone)
+		{
+			if (null != OnDownloading)
+				OnDownloading(loadRequest.LoadName, wwwOperation.progress);
+
+			yield return null;
+		}
+
+		callBack();
 	}
 }

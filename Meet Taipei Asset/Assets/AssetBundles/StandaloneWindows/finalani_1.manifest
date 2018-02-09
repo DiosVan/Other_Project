@@ -1,0 +1,133 @@
+ManifestFileVersion: 0
+CRC: 325195925
+Hashes:
+  AssetFileHash:
+    serializedVersion: 2
+    Hash: 9a95b6abcfdc73637f7d992beb6f776d
+  TypeTreeHash:
+    serializedVersion: 2
+    Hash: 5a135f1f9d25d7bd91f7a2f311e77397
+HashAppended: 0
+ClassTypes:
+- Class: 1
+  Script: {instanceID: 0}
+- Class: 28
+  Script: {instanceID: 0}
+- Class: 74
+  Script: {instanceID: 0}
+- Class: 91
+  Script: {instanceID: 0}
+- Class: 95
+  Script: {instanceID: 0}
+- Class: 114
+  Script: {fileID: -765806418, guid: f70555f144d8491a825f0804e09c671c, type: 3}
+- Class: 115
+  Script: {instanceID: 0}
+- Class: 213
+  Script: {instanceID: 0}
+- Class: 222
+  Script: {instanceID: 0}
+- Class: 224
+  Script: {instanceID: 0}
+Assets:
+- Assets/Resource/Animation/ch1/Broken closed2_00093.png
+- Assets/Resource/Animation/ch1/Broken closed2_00049.png
+- Assets/Resource/Animation/ch1/Broken closed2_00052.png
+- Assets/Resource/Animation/ch1/Broken closed2_00061.png
+- Assets/Resource/Animation/ch1/Broken closed2_00057.png
+- Assets/Resource/Animation/ch1/Broken closed2_00008.png
+- Assets/Resource/Animation/ch1/Broken closed2_00051.png
+- Assets/Resource/Animation/ch1/Broken closed2_00053.png
+- Assets/Resource/Animation/ch1/Broken closed2_00073.png
+- Assets/Resource/Animation/ch1/Broken closed2_00006.png
+- Assets/Resource/Animation/ch1/Broken closed2_00030.png
+- Assets/Resource/Animation/ch1/Broken closed2_00079.png
+- Assets/Resource/Animation/ch1/ch1_map.jpg
+- Assets/Resource/Animation/ch1/Ani.controller
+- Assets/Resource/Animation/ch1/Broken closed2_00002.png
+- Assets/Resource/Animation/ch1/Broken closed2_00083.png
+- Assets/Resource/Animation/ch1/Broken closed2_00031.png
+- Assets/Resource/Animation/ch1/Broken closed2_00060.png
+- Assets/Resource/Animation/ch1/Broken closed2_00003.png
+- Assets/Resource/Animation/ch1/Broken closed2_00074.png
+- Assets/Resource/Animation/ch1/Broken closed2_00022.png
+- Assets/Resource/Animation/ch1/Broken closed2_00007.png
+- Assets/Resource/Animation/ch1/Broken closed2_00054.png
+- Assets/Resource/Animation/ch1/Broken closed2_00077.png
+- Assets/Resource/Animation/ch1/Broken closed2_00016.png
+- Assets/Resource/Animation/ch1/Broken closed2_00017.png
+- Assets/Resource/Animation/ch1/Broken closed2_00048.png
+- Assets/Resource/Animation/ch1/Broken closed2_00056.png
+- Assets/Resource/Animation/ch1/Broken closed2_00019.png
+- Assets/Resource/Animation/ch1/Broken closed2_00068.png
+- Assets/Resource/Animation/ch1/Broken closed2_00064.png
+- Assets/Resource/Animation/ch1/Broken closed2_00072.png
+- Assets/Resource/Animation/ch1/Broken closed2_00076.png
+- Assets/Resource/Animation/ch1/Broken closed2_00050.png
+- Assets/Resource/Animation/ch1/AnimationClip.anim
+- Assets/Resource/Animation/ch1/Broken closed2_00014.png
+- Assets/Resource/Animation/ch1/Broken closed2_00023.png
+- Assets/Resource/Animation/ch1/Broken closed2_00011.png
+- Assets/Resource/Animation/ch1/Broken closed2_00035.png
+- Assets/Resource/Animation/ch1/Broken closed2_00095.png
+- Assets/Resource/Animation/ch1/Animation_Ch1.prefab
+- Assets/Resource/Animation/ch1/Broken closed2_00067.png
+- Assets/Resource/Animation/ch1/Broken closed2_00000.png
+- Assets/Resource/Animation/ch1/Broken closed2_00024.png
+- Assets/Resource/Animation/ch1/Broken closed2_00038.png
+- Assets/Resource/Animation/ch1/Broken closed2_00032.png
+- Assets/Resource/Animation/ch1/Broken closed2_00040.png
+- Assets/Resource/Animation/ch1/Broken closed2_00088.png
+- Assets/Resource/Animation/ch1/Broken closed2_00063.png
+- Assets/Resource/Animation/ch1/Broken closed2_00089.png
+- Assets/Resource/Animation/ch1/Broken closed2_00034.png
+- Assets/Resource/Animation/ch1/Broken closed2_00029.png
+- Assets/Resource/Animation/ch1/Broken closed2_00087.png
+- Assets/Resource/Animation/ch1/Broken closed2_00047.png
+- Assets/Resource/Animation/ch1/Broken closed2_00045.png
+- Assets/Resource/Animation/ch1/Broken closed2_00001.png
+- Assets/Resource/Animation/ch1/Broken closed2_00039.png
+- Assets/Resource/Animation/ch1/Broken closed2_00009.png
+- Assets/Resource/Animation/ch1/Broken closed2_00094.png
+- Assets/Resource/Animation/ch1/Broken closed2_00091.png
+- Assets/Resource/Animation/ch1/Broken closed2_00015.png
+- Assets/Resource/Animation/ch1/Broken closed2_00025.png
+- Assets/Resource/Animation/ch1/Broken closed2_00026.png
+- Assets/Resource/Animation/ch1/Broken closed2_00005.png
+- Assets/Resource/Animation/ch1/Broken closed2_00081.png
+- Assets/Resource/Animation/ch1/Broken closed2_00021.png
+- Assets/Resource/Animation/ch1/Broken closed2_00013.png
+- Assets/Resource/Animation/ch1/Broken closed2_00033.png
+- Assets/Resource/Animation/ch1/Broken closed2_00065.png
+- Assets/Resource/Animation/ch1/Broken closed2_00044.png
+- Assets/Resource/Animation/ch1/Broken closed2_00071.png
+- Assets/Resource/Animation/ch1/Broken closed2_00085.png
+- Assets/Resource/Animation/ch1/Broken closed2_00028.png
+- Assets/Resource/Animation/ch1/Broken closed2_00078.png
+- Assets/Resource/Animation/ch1/Broken closed2_00075.png
+- Assets/Resource/Animation/ch1/Broken closed2_00090.png
+- Assets/Resource/Animation/ch1/Broken closed2_00012.png
+- Assets/Resource/Animation/ch1/Broken closed2_00082.png
+- Assets/Resource/Animation/ch1/Broken closed2_00069.png
+- Assets/Resource/Animation/ch1/Broken closed2_00036.png
+- Assets/Resource/Animation/ch1/Broken closed2_00043.png
+- Assets/Resource/Animation/ch1/Broken closed2_00070.png
+- Assets/Resource/Animation/ch1/Broken closed2_00046.png
+- Assets/Resource/Animation/ch1/Broken closed2_00037.png
+- Assets/Resource/Animation/ch1/Broken closed2_00027.png
+- Assets/Resource/Animation/ch1/Broken closed2_00092.png
+- Assets/Resource/Animation/ch1/Broken closed2_00042.png
+- Assets/Resource/Animation/ch1/Broken closed2_00066.png
+- Assets/Resource/Animation/ch1/Broken closed2_00059.png
+- Assets/Resource/Animation/ch1/Broken closed2_00080.png
+- Assets/Resource/Animation/ch1/Broken closed2_00018.png
+- Assets/Resource/Animation/ch1/Broken closed2_00004.png
+- Assets/Resource/Animation/ch1/Broken closed2_00084.png
+- Assets/Resource/Animation/ch1/Broken closed2_00010.png
+- Assets/Resource/Animation/ch1/Broken closed2_00062.png
+- Assets/Resource/Animation/ch1/Broken closed2_00041.png
+- Assets/Resource/Animation/ch1/Broken closed2_00058.png
+- Assets/Resource/Animation/ch1/Broken closed2_00055.png
+- Assets/Resource/Animation/ch1/Broken closed2_00020.png
+- Assets/Resource/Animation/ch1/Broken closed2_00086.png
+Dependencies: []
