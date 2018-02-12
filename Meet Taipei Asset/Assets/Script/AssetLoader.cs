@@ -14,21 +14,6 @@ public class AssetLoader : ILoader<AssetRequest>
 	#endregion
 
 	#region ILoader
-	public void StartDownload()
-	{
-		if (null != mWebRequest)
-		{
-			mRequestOperation = mWebRequest.Send();
-
-			while (!mRequestOperation.isDone)
-			{
-				if (null != OnDownloading)
-					OnDownloading(TargetName, mRequestOperation.progress * 100f);
-			}
-
-			DownloadFinish();
-		}
-	}
 
 	public void DownloadFinish()
 	{
@@ -72,18 +57,29 @@ public class AssetLoader : ILoader<AssetRequest>
 	{
 		TargetName = loadRequest.LoadName;
 
-		UnityWebRequest wwwAssetRequest = UnityWebRequest.GetAssetBundle(loadRequest.LoadPath, loadRequest.AssetCRC);
+		bool isHaveCache = Caching.IsVersionCached(loadRequest.LoadPath, loadRequest.H128);
+
+		if (isHaveCache)
+			Debug.Log("Bundle with this hash is already cached!");
+		else
+			Debug.Log("No cached version founded for this hash..");
+
+		UnityWebRequest wwwAssetRequest = UnityWebRequest.GetAssetBundle(loadRequest.LoadPath, loadRequest.H128, loadRequest.CRC);
 		loadRequest.LoadRequest = wwwAssetRequest;
 		AsyncOperation wwwOperation = loadRequest.LoadRequest.Send();
 
 		while (!wwwOperation.isDone)
 		{
+			loadRequest.DownloadSize = (isHaveCache) ? loadRequest.BundleSize : (long)(wwwAssetRequest.downloadedBytes / 1024);
+
 			if (null != OnDownloading)
-				OnDownloading(loadRequest.LoadName, wwwOperation.progress);
+				OnDownloading(loadRequest.LoadName, 100f * wwwOperation.progress);
 
 			yield return null;
 		}
 
 		callBack();
+
+		wwwAssetRequest.Dispose();
 	}
 }
