@@ -15,6 +15,12 @@ public class LoadAssetHandler : MonoBehaviour
 
 	private ManifestManager mMainfestMgr;
 
+	private int loadCompleteNum = 0;
+
+	private float mFullSize = 0f;
+
+	private float mloadingSize = 0f;
+
 	#region dropbox
 	private Dictionary<string, string> mDropboxDict = new Dictionary<string, string>();
 	#endregion
@@ -61,12 +67,6 @@ public class LoadAssetHandler : MonoBehaviour
 
 		yield return StartCoroutine(GetAssetBundles(mMainfestMgr.MainfestDict));
 	}
-
-	private int loadCompleteNum = 0;
-
-	private float mFullSize = 0f;
-
-	private float mloadingSize = 0f;
 
 	private IEnumerator GetAssetBundles(Dictionary<string, AssetRequest> downlist)
 	{
@@ -124,7 +124,7 @@ public class LoadAssetHandler : MonoBehaviour
 
 			AssetLoader asb = new AssetLoader();
 			asb.OnDownloading += DownloadingListener;
-			#if false
+#if false
 			downlist[key].LoadPath = assetURL;
 #endif
 			LoadAssetHandler.Instance.StartCoroutine(asb.DownloadProcess(downlist[key], () => { return DownloadCompleteListenr(downlist[key]); }));
