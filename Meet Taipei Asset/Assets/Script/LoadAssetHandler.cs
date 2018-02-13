@@ -115,7 +115,6 @@ public class LoadAssetHandler : MonoBehaviour
 
 			AssetLoader asb = new AssetLoader();
 			asb.OnDownloading += DownloadingListener;
-
 			StartCoroutine(asb.DownloadProcess(downlist[key], () => { return DownloadCompleteListenr(downlist[key]); }));
 		}
 
