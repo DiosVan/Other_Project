@@ -15,6 +15,18 @@ public class ManifestLoader : ILoader<ManifestRequest>
 
 	public event Action<string, DownloadHandler> OnComplete;
 	#region ILoader
+	public IEnumerator DownloadProcess(ManifestRequest loadRequest, Func<ManifestRequest> callBack)
+	{
+		UnityWebRequest wwwManifest = UnityWebRequest.Get(loadRequest.LoadPath);
+		loadRequest.LoadRequest = wwwManifest;
+		AsyncOperation wwwOperation = loadRequest.LoadRequest.Send();
+
+		while (!wwwOperation.isDone)
+			yield return null;
+
+		callBack();
+	}
+
 	void ILoader<ManifestRequest>.DownloadFinish() { }
 	#endregion
 
@@ -29,18 +41,6 @@ public class ManifestLoader : ILoader<ManifestRequest>
 
 	public void Reset() { }
 
-	public IEnumerator DownloadProcess(ManifestRequest loadRequest, Func<ManifestRequest> callBack)
-	{
-		UnityWebRequest wwwManifest = UnityWebRequest.Get(loadRequest.LoadPath);
-		loadRequest.LoadRequest = wwwManifest;
-		AsyncOperation wwwOperation = loadRequest.LoadRequest.Send();
-
-		while (!wwwOperation.isDone)
-			yield return null;
-
-		callBack();
-	}
-
 	#endregion
 
 	public UnityWebRequest ThisWWW { get { return wwwManifest; } }
@@ -49,4 +49,3 @@ public class ManifestLoader : ILoader<ManifestRequest>
 	UnityWebRequest wwwManifest = null;
 	AsyncOperation wwwOperation = null;
 }
-

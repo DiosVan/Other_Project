@@ -1,23 +1,32 @@
-﻿using System;
+﻿#define USE_DROPBOX
+//#define USE_LOCAL
+
+using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.IO;
+
 using UnityEngine;
 using UnityEngine.Networking;
 
 public class LoadAssetHandler : MonoBehaviour
 {
-	public delegate void OnDownLoadProgress(float progress, bool isComplete, string error);
-
 	public static LoadAssetHandler Instance = null;
-
-	private Dictionary<string, AssetBundle> mBundleDict = new Dictionary<string, AssetBundle>();
 
 	private ManifestManager mMainfestMgr;
 
-	#region dropbox
+	private Dictionary<string, AssetBundle> mBundleDict = new Dictionary<string, AssetBundle>();
+
+#if USE_DROPBOX
 	private Dictionary<string, string> mDropboxDict = new Dictionary<string, string>();
-	#endregion
+#endif
+
+	private int mLoadCompleteNum = 0;
+
+	/// <summary>total Asset Size</summary>
+	private float mFullSize = 0f;
+
+	/// <summary>loaded Size</summary>
+	private float mLoadingSize = 0f;
 
 	public static void Initial()
 	{
@@ -31,12 +40,12 @@ public class LoadAssetHandler : MonoBehaviour
 
 	void Awake()
 	{
-		#region dropbox
-		mDropboxDict["background"] = "https://www.dropbox.com/s/muhm1gccgftqdrq/";
-		mDropboxDict["finalani_1"] = "https://www.dropbox.com/s/ajcmzf0axb5qumx/";
+#if USE_DROPBOX
+		mDropboxDict["background"] = "https://www.dropbox.com/s/3elzw7ug0pgk4n3/";
+		mDropboxDict["testasset_1"] = "https://www.dropbox.com/s/htk4y8z7jb1r2pp/";
 		mDropboxDict["avatar_ch1"] = "https://www.dropbox.com/s/wk92on19ac3wqk3/";
 		mDropboxDict["avatar_ch2"] = "https://www.dropbox.com/s/wd7rr1seub7axpk/";
-		#endregion
+#endif
 	}
 
 	public void GetManifest(bool forceRedownloadAsset = false)
@@ -62,35 +71,17 @@ public class LoadAssetHandler : MonoBehaviour
 		yield return StartCoroutine(GetAssetBundles(mMainfestMgr.MainfestDict));
 	}
 
-	private int loadCompleteNum = 0;
-
-	private float mFullSize = 0f;
-
-	private float mloadingSize = 0f;
-
 	private IEnumerator GetAssetBundles(Dictionary<string, AssetRequest> downlist)
 	{
 		//
 		while (!Caching.ready)
 			yield return null;
 
-		loadCompleteNum = 0;
-		mloadingSize = 0;
+		mLoadCompleteNum = 0;
+		mLoadingSize = 0;
 		mFullSize = 0;
 
-		string platform = string.Empty;
-
-#if UNITY_ANDROID
-		string basePath = string.Format("file://{0}/AssetBundles/Android/", Application.dataPath);
-		string mainbundleName = "Android";
-#else
-		string basePath = string.Format("file://{0}/AssetBundles/", Application.dataPath);
-		platform = "StandaloneWindows";
-#endif
-
-		yield return StartCoroutine(CalculateFullSize(downlist));
-
-		List<AssetLoader> loadQuene = new List<AssetLoader>();
+		yield return StartCoroutine(PreProcessAssetRequest(downlist));
 
 		foreach (KeyValuePair<string, AssetRequest> kv in downlist)
 		{
@@ -124,39 +115,26 @@ public class LoadAssetHandler : MonoBehaviour
 
 			AssetLoader asb = new AssetLoader();
 			asb.OnDownloading += DownloadingListener;
-			#if false
-			downlist[key].LoadPath = assetURL;
-#endif
-			LoadAssetHandler.Instance.StartCoroutine(asb.DownloadProcess(downlist[key], () => { return DownloadCompleteListenr(downlist[key]); }));
+
+			StartCoroutine(asb.DownloadProcess(downlist[key], () => { return DownloadCompleteListenr(downlist[key]); }));
 		}
 
-		while (loadCompleteNum < downlist.Count)
+		while (mLoadCompleteNum < downlist.Count)
 			yield return null;
 
 		foreach (KeyValuePair<string, AssetBundle> kv in mBundleDict)
 			Debug.Log(kv.Key + "/" + kv.Value);
 	}
 
-	IEnumerator CalculateFullSize(Dictionary<string, AssetRequest> downlist)
+	IEnumerator PreProcessAssetRequest(Dictionary<string, AssetRequest> downlist)
 	{
-		string platform = string.Empty;
-
-#if UNITY_ANDROID
-		string basePath = string.Format("file://{0}/AssetBundles/Android/", Application.dataPath);
-		string mainbundleName = "Android";
-#else
-		string basePath = string.Format("file://{0}/AssetBundles/", Application.dataPath);
-		platform = "StandaloneWindows";
-#endif
-
 		foreach (KeyValuePair<string, AssetRequest> kv in downlist)
 		{
-			string assetURL = string.Format("{0}/{1}/{2}", basePath, platform, kv.Key);
 
-#region dropbox
+#if USE_DROPBOX
 			string key = kv.Key.ToString().ToLower();
-			assetURL = String.Format("{0}{1}?dl=1", mDropboxDict[key], key);
-#endregion
+			string assetURL = String.Format("{0}{1}?dl=1", mDropboxDict[key], key);
+#endif
 
 			long fileSize = 0;
 			using (var headRequest = UnityWebRequest.Head(assetURL))
@@ -172,8 +150,6 @@ public class LoadAssetHandler : MonoBehaviour
 					var contentLength = headRequest.GetResponseHeader("CONTENT-LENGTH");
 					long.TryParse(contentLength, out fileSize);
 
-					Debug.Log(key + ": " + fileSize + "/" + (fileSize / 1024));
-
 					//byte to kb
 					mFullSize += (float)(fileSize / 1024);
 					downlist[key].LoadPath = assetURL;
@@ -185,18 +161,18 @@ public class LoadAssetHandler : MonoBehaviour
 
 	private void DownloadingListener(string down, float progress)
 	{
-		mloadingSize = 0;
+		mLoadingSize = 0;
 		foreach (KeyValuePair<string, AssetRequest> kv in mMainfestMgr.MainfestDict)
-			mloadingSize += mMainfestMgr.MainfestDict[kv.Key].DownloadSize;
+			mLoadingSize += mMainfestMgr.MainfestDict[kv.Key].DownloadSize;
 
 		//Debug.Log(string.Format("[{0}]:{1}%", down, progress));
-		Debug.Log(string.Format("----Full Get {0}kb, progress {1}%----", mloadingSize, (mloadingSize / mFullSize) * 100f));
+		Debug.Log(string.Format("----Full Get {0}kb, progress {1}%----", mLoadingSize, (mLoadingSize / mFullSize) * 100f));
 		//
 	}
 
 	private AssetRequest DownloadCompleteListenr(AssetRequest req)
 	{
-		loadCompleteNum++;
+		mLoadCompleteNum++;
 
 		var assetBundle = DownloadHandlerAssetBundle.GetContent(req.LoadRequest);
 

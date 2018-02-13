@@ -56,7 +56,8 @@ public class BuildAssetScript : MonoBehaviour
 		string folderPath = string.Format("{0}/{1}", targetDir, mTargetPlatform.ToString());
 
 		//建立存放 AssetBundle 的資料夾
-		if (!Directory.Exists(folderPath)) Directory.CreateDirectory(folderPath);
+		if (!Directory.Exists(folderPath))
+			Directory.CreateDirectory(folderPath);
 
 		//Debug.Log(SelectedAsset.Length);
 
@@ -69,12 +70,37 @@ public class BuildAssetScript : MonoBehaviour
 			string targetPath = string.Format("{0}{1}{2}", targetDir, Path.DirectorySeparatorChar, mTargetPlatform.ToString()) + Path.DirectorySeparatorChar + obj.name + extensionName;
 
 			//取代檔案
-			if (File.Exists(targetPath)) File.Delete(targetPath);
+			if (File.Exists(targetPath))
+				File.Delete(targetPath);
 
 			//
-			if (!(obj is GameObject) && !(obj is Texture2D) && !(obj is Material)) continue;
+			if (!(obj is GameObject) && !(obj is Texture2D) && !(obj is Material))
+				continue;
 		}
 
-		BuildPipeline.BuildAssetBundles(folderPath, buildOptions, mTargetPlatform);
+		AssetBundleManifest asm = BuildPipeline.BuildAssetBundles(folderPath, buildOptions, mTargetPlatform);
+
+		//get all assetbundle
+		string[] s = asm.GetAllAssetBundles();
+
+		Dictionary<string, object[]> mTempDict = new Dictionary<string, object[]>();
+		for (int i = 0; i < s.Length; i++)
+		{
+			uint crc;
+			BuildPipeline.GetCRCForAssetBundle(string.Format("{0}/{1}", folderPath, s[i]), out crc);
+
+			mTempDict.Add(s[i], new object[2] { asm.GetAssetBundleHash(s[i]), crc });
+		}
+
+		string json = MiniJSON.Json.Serialize(mTempDict);
+		string path = string.Format("{0}/AssetBundleList.txt", folderPath);
+
+		if (File.Exists(folderPath))
+			File.Delete(folderPath);
+
+		using (StreamWriter sw = File.CreateText(path))
+		{
+			sw.WriteLine(json);
+		}
 	}
 }

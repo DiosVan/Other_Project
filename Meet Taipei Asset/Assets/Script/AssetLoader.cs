@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections;
-using System.Collections.Generic;
+
 using UnityEngine;
 using UnityEngine.Networking;
 
@@ -14,45 +14,6 @@ public class AssetLoader : ILoader<AssetRequest>
 	#endregion
 
 	#region ILoader
-
-	public void DownloadFinish()
-	{
-		if (null != OnDownloadComplete)
-			OnDownloadComplete();
-	}
-	#endregion
-
-	#region IDisposable
-	void IDisposable.Dispose() { }
-	#endregion
-
-	#region IEnumerator
-	public object Current { get; set; }
-
-	public bool MoveNext() { return IsDone; }
-
-	public void Reset() { }
-	#endregion
-
-	public event Action<string, float> OnDownloading;
-	public event Action OnDownloadComplete;
-
-	UnityWebRequest mWebRequest = null;
-	AsyncOperation mRequestOperation = null;
-
-	private static string BASE_URL = string.Format("file://{0}/AssetBundles/", Application.dataPath);
-
-	public AssetBundle GetContent()
-	{
-		if (IsDone)
-		{
-			var assetBundle = DownloadHandlerAssetBundle.GetContent(mWebRequest);
-			return (AssetBundle)assetBundle;
-		}
-		else
-			return null;
-	}
-
 	public IEnumerator DownloadProcess(AssetRequest loadRequest, Func<AssetRequest> callBack)
 	{
 		TargetName = loadRequest.LoadName;
@@ -82,4 +43,29 @@ public class AssetLoader : ILoader<AssetRequest>
 
 		wwwAssetRequest.Dispose();
 	}
+
+	public void DownloadFinish()
+	{
+		if (null != OnDownloadComplete)
+			OnDownloadComplete();
+	}
+	#endregion
+
+	#region IDisposable
+	void IDisposable.Dispose() { }
+	#endregion
+
+	#region IEnumerator
+	public object Current { get; set; }
+
+	public bool MoveNext() { return IsDone; }
+
+	public void Reset() { }
+	#endregion
+
+	public event Action<string, float> OnDownloading;
+	public event Action OnDownloadComplete;
+
+	UnityWebRequest mWebRequest = null;
+	AsyncOperation mRequestOperation = null;
 }

@@ -1,9 +1,11 @@
-﻿using System;
+﻿#define USE_DROPBOX
+//#define USE_LOCAL
+
+using System;
 using System.Collections;
 using System.Collections.Generic;
 
 using UnityEngine;
-using UnityEngine.Networking;
 
 public class ManifestManager
 {
@@ -14,31 +16,35 @@ public class ManifestManager
 
 	private Dictionary<string, string> mDropboxDict = new Dictionary<string, string>();
 
+	private string mPlatform = string.Empty;
+
 	public IEnumerator LoadManifest()
 	{
-		#region dropbox
+
+#if USE_DROPBOX
 		mDropboxDict["background"] = "https://www.dropbox.com/s/yhqzu2tqhmhbex4/";
 		mDropboxDict["finalani_1"] = "https://www.dropbox.com/s/b431yjype0u4d6i/";
 		mDropboxDict["avatar_ch1"] = "https://www.dropbox.com/s/e4xgv0n2xorkhv7/";
 		mDropboxDict["avatar_ch2"] = "https://www.dropbox.com/s/joqklmteepjs5wm/";
-		#endregion
-
-		string platform = string.Empty;
-
-#if UNITY_ANDROID
-		string basePath = string.Format("file://{0}/AssetBundles/Android/", Application.dataPath);
-		string mainbundleName = "Android";
-#else
-		string basePath = string.Format("file://{0}/AssetBundles/", Application.dataPath);
-		platform = "StandaloneWindows";
 #endif
 
-		string manifestURL = string.Format("{0}/{1}/{2}.manifest", basePath, platform, platform);
-		UrlAppendTimeStamp(ref manifestURL);
+		string manifestURL = string.Empty;
 
-		#region dropbox
-		manifestURL = "https://www.dropbox.com/s/yo1vh290jrm0pga/Android.manifest?dl=1";
-		#endregion
+#if USE_LOCAL
+#if UNITY_ANDROID
+		mPlatform = "Android";
+#else
+		mPlatform = "StandaloneWindows";
+#endif
+		string basePath = string.Format("file://{0}/AssetBundles/{1}/", Application.dataPath, mPlatform);
+		manifestURL = string.Format("{0}{1}.manifest", basePath, mPlatform);
+#endif
+
+#if USE_DROPBOX
+		manifestURL = "https://www.dropbox.com/s/e8wxi1zrgn44yfl/AssetBundleList.txt?dl=1";
+#endif
+
+		UrlAppendTimeStamp(ref manifestURL);
 
 		ManifestLoader mfLoader = new ManifestLoader();
 		ManifestRequest mr = new ManifestRequest();
@@ -47,6 +53,26 @@ public class ManifestManager
 
 		yield return LoadAssetHandler.Instance.StartCoroutine(mfLoader.DownloadProcess(mr, () => { return null; }));
 
+#region parse json.txt to get asset list
+		Dictionary<string, object> assetDict = (Dictionary<string, object>)MiniJSON.Json.Deserialize(mr.LoadRequest.downloadHandler.text);
+
+		foreach (KeyValuePair<string, object> kv in assetDict)
+		{
+			AssetRequest asRq = new AssetRequest();
+			var key = kv.Key.ToString().ToLower();
+			var values = (List<object>)kv.Value;
+
+			asRq.LoadName = key;
+			asRq.H128 = Hash128.Parse(values[0].ToString());
+			asRq.CRC = uint.Parse(values[1].ToString());
+
+			mMainfestDict[asRq.LoadName] = asRq;
+		}
+
+		yield break;
+#endregion
+
+#region parse manifest to get asset list
 		string[] lines = mr.LoadRequest.downloadHandler.text.Split(new string[] { "\n" }, StringSplitOptions.None);
 
 		mAssetList = new List<string>();
@@ -78,12 +104,15 @@ public class ManifestManager
 				if (!mDropboxDict.ContainsKey(ms.ToLower()))
 					continue;
 
-				string asbManifestURL = string.Format("{0}/{1}/{2}.manifest", basePath, platform, ms);
+				string asbManifestURL = string.Empty;
+#if USE_LOCAL
+				asbManifestURL = string.Format("{0}{1}.manifest", basePath, ms);
 				UrlAppendTimeStamp(ref asbManifestURL);
+#endif
 
-				#region dropbox
+#if USE_DROPBOX
 				asbManifestURL = string.Format("{0}{1}.manifest?dl=1", mDropboxDict[ms.ToLower()], ms.ToLower());
-				#endregion
+#endif
 
 				ManifestLoader asbMfLoader = new ManifestLoader();
 				ManifestRequest mmr = new ManifestRequest();
@@ -98,6 +127,12 @@ public class ManifestManager
 
 		while (mMainfestDict.Count < requestCount)
 			yield return null;
+#endregion
+	}
+
+	private void UrlAppendTimeStamp(ref string url)
+	{
+		url += ((url.Contains("?")) ? "&" : "?") + "t=" + DateTime.Now.ToString("yyyyMMddHHmmss");
 	}
 
 	private ManifestRequest AsbMfLoader_OnComplete(ManifestRequest request)
@@ -113,15 +148,8 @@ public class ManifestManager
 		return request;
 	}
 
-	private void UrlAppendTimeStamp(ref string url)
+	private bool ParseAssetManifest(string[] lines, ref AssetRequest asRq)
 	{
-		url += ((url.Contains("?")) ? "&" : "?") + "t=" + DateTime.Now.ToString("yyyyMMddHHmmss");
-	}
-
-	private bool ParseAssetManifest(string[] lines, /*out string str,*/ ref AssetRequest asRq)
-	{
-		//str = string.Empty;
-
 		var crc = lines[1];
 		int startCatchIndex = crc.IndexOf("CRC: ") + 5;
 		asRq.CRC = uint.Parse(crc.Substring(startCatchIndex, crc.Length - startCatchIndex));
